@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="login-container">
     <label for="brokerName">Введите имя брокера:</label>
     <input v-model="brokerName" type="text" id="brokerName" />
     <button @click="login">Войти</button>
@@ -18,20 +18,16 @@ export default {
   methods: {
     async login() {
       try {
-        const response = await this.$axios.get('http://localhost:3001/brokers');
-        const brokers = response.data.brokers;
+        const success = await this.$store.dispatch('loadBrokerData', this.brokerName);
 
-        const brokerExists = brokers.some(broker => broker.name === this.brokerName);
-
-        if (brokerExists) {
-          this.$store.dispatch('updateBrokerName', this.brokerName);
+        if (success) {
           this.$router.push('/main');
         } else {
-          this.loginError = "Неправильное имя брокера";
+          this.loginError = 'Неверное имя брокера';
         }
       } catch (error) {
-        console.error("Ошибка при запросе к серверу:", error);
-        this.loginError = "Произошла ошибка при запросе к серверу";
+        console.error('Ошибка при запросе к серверу:', error.message);
+        this.loginError = 'Ошибка при запросе к серверу';
       }
     },
   },
@@ -40,4 +36,7 @@ export default {
 
 <style scoped>
 /* Стили для компонента Login */
+.login-container {
+  margin-top: 60px; /* Измените значение отступа по вашему усмотрению */
+}
 </style>
