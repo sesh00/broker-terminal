@@ -4,6 +4,7 @@ export default createStore({
     state: {
         brokerData: JSON.parse(localStorage.getItem('brokerData')) || null,
         allBrokers: JSON.parse(localStorage.getItem('allBrokers')) || null,
+        stockData: JSON.parse(localStorage.getItem('stockData')) || null,
     },
     mutations: {
         setBrokerData(state, data) {
@@ -14,8 +15,20 @@ export default createStore({
             state.allBrokers = data;
             localStorage.setItem('allBrokers', JSON.stringify(data));
         },
+
+        updateStockData(state, newStockData) {
+            state.stockData = newStockData;
+            localStorage.setItem('stockData', JSON.stringify(newStockData));
+        },
     },
     actions: {
+
+        async loadStockData ({ commit, state }, data) {
+            if (Array.isArray(state.stockData)) {
+                commit('setStocksData', data);
+            }
+        },
+
         async fetchAllBrokers({ commit }) {
             try {
                 const response = await fetch('http://localhost:3001/brokers');
