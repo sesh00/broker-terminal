@@ -1,9 +1,10 @@
 <template>
   <div>
+    <h1>Меню</h1>
     <ul>
-      <li><router-link to="/">Главная</router-link></li>
-      <li><router-link to="/main">Торговая страница</router-link></li>
-      <li><router-link to="/admin">Админская страница</router-link></li>
+      <li><router-link to="/">Логин</router-link></li>
+      <li><router-link to="/main">Торговля</router-link></li>
+      <li><router-link to="/admin">Статистика</router-link></li>
     </ul>
   </div>
 </template>
@@ -14,13 +15,5 @@ export default {
 </script>
 
 <style scoped>
-ul {
-  list-style-type: none;
-  padding: 0;
-}
 
-li {
-  margin-bottom: 10px;
-  text-align: left;
-}
 </style>

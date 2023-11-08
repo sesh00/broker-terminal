@@ -1,6 +1,7 @@
 <template>
   <div class="login-container">
-    <label for="brokerName">Введите имя брокера:</label>
+    <h1>Добро пожаловать!</h1>
+    <label for="brokerName">Введите имя брокера:</label><br><br>
     <input v-model="brokerName" type="text" id="brokerName" />
     <button @click="login">Войти</button>
     <p v-if="loginError">{{ loginError }}</p>
@@ -35,8 +36,5 @@ export default {
 </script>
 
 <style scoped>
-/* Стили для компонента Login */
-.login-container {
-  margin-top: 60px; /* Измените значение отступа по вашему усмотрению */
-}
+
 </style>
