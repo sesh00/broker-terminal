@@ -5,6 +5,7 @@ export default createStore({
         brokerData: JSON.parse(localStorage.getItem('brokerData')) || null,
         allBrokers: JSON.parse(localStorage.getItem('allBrokers')) || null,
         stockData: JSON.parse(localStorage.getItem('stockData')) || null,
+
     },
     mutations: {
         setBrokerData(state, data) {

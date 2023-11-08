@@ -78,15 +78,19 @@ table {
   width: 100%;
   border-collapse: collapse;
   margin-top: 20px;
+  table-layout: fixed; /* Added property to make the table layout fixed */
 }
 
 th, td {
   border: 1px solid #dddddd;
   text-align: left;
   padding: 8px;
+  width: 100px; /* Set a fixed width for the columns (adjust as needed) */
+  word-wrap: break-word; /* Enable word wrapping within cells */
 }
 
 th {
   background-color: #f2f2f2;
 }
 </style>
+
