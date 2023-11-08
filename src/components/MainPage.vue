@@ -1,9 +1,12 @@
+<!-- MainPage.vue -->
+
 <template>
   <div>
     <Navbar />
     <h1>Торговля</h1>
     <p v-if="brokerData">Привет, {{ brokerData.name }}!</p>
     <p v-else>Loading...</p>
+    <!-- Основной функционал торговли и отображение информации -->
   </div>
 </template>
 
