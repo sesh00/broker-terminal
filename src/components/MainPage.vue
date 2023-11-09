@@ -52,16 +52,38 @@ export default {
   },
 
   methods: {
+    async updateStockList(newStockData) {
+      try {
+
+        const response = await this.$axios.get('http://localhost:3001/stocks');
+        const stocks = response.data;
+        const filteredStocks = []
+        for (const stock in stocks){
+          if (stocks[stock].trading ) {
+            filteredStocks.push(stock)
+          }
+        }
+
+        newStockData = newStockData.filter(function (stockData) {
+          return filteredStocks.includes(stockData.symbol);
+        });
+
+        return newStockData;
+      } catch (error) {
+        console.error("Ошибка при запросе к серверу:", error);
+        this.loginError = "Произошла ошибка при запросе к серверу";
+      }
+    },
+
+
     initializeWebSocket() {
       this.socket = io('http://localhost:3001');
 
-      this.socket.on('updateStockData', (newStockData) => {
-        this.$store.commit('updateStockData', newStockData);
-        console.log('Current newStockData Updated:', newStockData);
+      this.socket.on('updateStockData', async (newStockData) => {
+        this.$store.commit('updateStockData', await this.updateStockList(newStockData));
       });
 
       this.socket.on('updateCurrentDate', (newDate) => {
-        console.log('Current Date Updated:', newDate);
       });
 
       this.socket.on('disconnect', () => {
