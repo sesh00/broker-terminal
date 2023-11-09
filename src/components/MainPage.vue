@@ -2,7 +2,7 @@
   <div>
     <Navbar />
     <h1>Торговля</h1>
-    <p v-if="brokerData">Привет, {{ brokerData.name }}!</p>
+    <p v-if="brokerData">Добро пожаловать, {{ brokerData.name }}!</p>
     <p v-else>Loading...</p>
     <table v-if="stockData">
       <thead>
@@ -27,12 +27,45 @@
       </tbody>
     </table>
     <p v-else>No stock data available.</p>
+
+
+    <h1>Брокерский счет</h1>
+    <table v-if="brokerData">
+      <thead>
+      <tr>
+        <th>Брокер</th>
+        <th>Валюта</th>
+        <th>Акции</th>
+        <th>Баланс</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr>
+        <td>{{ brokerData.name }}</td>
+        <td>{{ brokerData.initialFunds }}</td>
+        <td>
+          <ul>
+            <li v-for="stock in brokerData.stocks" :key="stock.symbol">
+              <div class="stock-info">
+                <span class="stock-name">{{ stock.symbol }}</span>
+                <span class="quantity">Quantity: {{ stock.quantity }}</span>
+                <span class="price">Price: {{ stock.purchasePrice }}</span>
+                <span class="pnl">PNL: {{ calculateProfitLoss(stock) }}</span>
+              </div>
+            </li>
+          </ul>
+        </td>
+        <td>{{ calculateBalance(brokerData) }}</td>
+      </tr>
+      </tbody>
+    </table>
+    <p v-else>No broker data available.</p>
   </div>
 </template>
 
 <script>
 import Navbar from "@/components/Navbar.vue";
-import { mapState } from "vuex";
+import { mapState, mapActions } from "vuex";
 import io from 'socket.io-client';
 
 export default {
@@ -49,9 +82,24 @@ export default {
   },
   created() {
     this.initializeWebSocket();
+    this.loadBrokerData();
+
   },
 
   methods: {
+
+    ...mapActions(["loadBrokerData"]),
+    calculateProfitLoss(stock) {
+      const currentPrice = this.stockData.find(s => s.symbol === stock.symbol)?.historicalDataElement[2] || 0;
+      return (currentPrice - stock.purchasePrice) * stock.quantity;
+    },
+    calculateBalance(broker) {
+      const currencyBalance = broker.initialFunds;
+      const stockBalance = broker.stocks.reduce((total, stock) => total + this.calculateProfitLoss(stock), 0);
+      return currencyBalance + stockBalance;
+    },
+
+
     async updateStockList(newStockData) {
       try {
 
@@ -113,6 +161,30 @@ th, td {
 
 th {
   background-color: #f2f2f2;
+}
+.stock-info span {
+  margin-bottom: 5px;
+}
+
+.stock-name {
+  font-weight: bold;
+}
+
+.stock-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.quantity {
+  color: #3498db; /* Set color for Quantity */
+}
+
+.price {
+  color: #2ecc71; /* Set color for Price */
+}
+
+.pnl {
+  color: #e74c3c; /* Set color for PNL */
 }
 </style>
 
