@@ -41,14 +41,13 @@ export default createStore({
         },
         async loadBrokerData({ commit, state }, brokerName) {
             try {
-                if (!state.allBrokers) {
-                    await this.dispatch('fetchAllBrokers');
-                }
+                await this.dispatch('fetchAllBrokers');
 
                 if (Array.isArray(state.allBrokers)) {
                     const broker = state.allBrokers.find(b => b.name === brokerName);
 
                     if (broker) {
+                        console.log(broker)
                         commit('setBrokerData', broker);
                         return true;
                     }

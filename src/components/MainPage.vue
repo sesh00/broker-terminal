@@ -13,6 +13,7 @@
         <th>High</th>
         <th>Low</th>
         <th>Date</th>
+        <th>Actions</th>
       </tr>
       </thead>
       <tbody>
@@ -23,11 +24,14 @@
         <td>{{ stock.historicalDataElement[3] }}</td>
         <td>{{ stock.historicalDataElement[4] }}</td>
         <td>{{ stock.historicalDataElement[0] }}</td>
+        <td>
+          <button @click="buyStock(brokerData.name, stock.symbol, 1, stock.historicalDataElement[3])">Buy</button>
+          <button @click="sellStock(brokerData.name, stock.symbol, 1, stock.historicalDataElement[3])">Sell</button>
+        </td>
       </tr>
       </tbody>
     </table>
     <p v-else>No stock data available.</p>
-
 
     <h1>Брокерский счет</h1>
     <table v-if="brokerData">
@@ -63,6 +67,7 @@
   </div>
 </template>
 
+
 <script>
 import Navbar from "@/components/Navbar.vue";
 import { mapState, mapActions } from "vuex";
@@ -82,14 +87,42 @@ export default {
   },
   created() {
     this.initializeWebSocket();
-    this.loadBrokerData();
+    this.loadBrokerData(this.brokerData.name);
 
   },
 
   methods: {
 
-    ...mapActions(["loadBrokerData"]),
-    calculateProfitLoss(stock) {
+    ...mapActions(["fetchAllBrokers", "loadBrokerData"]),
+
+    async buyStock(name, symbol, quantity, price) {
+      try {
+        // Send a request to the server to buy the stock
+        const response = await this.$axios.post(`http://localhost:3001/brokers/${name}/buy-stock/${symbol}/${quantity}/${price}`);
+        await this.loadBrokerData(this.brokerData.name);
+
+      } catch (error) {
+        console.error("Error buying stock:", error);
+      }
+    },
+
+    async sellStock(name, symbol, quantity, price) {
+      try {
+        // Send a request to the server to sell the stock
+        const response = await this.$axios.post(`http://localhost:3001/brokers/${name}/sell-stock/${symbol}/${quantity}/${price}`);
+
+        // Update brokerData in the Vuex store after successful sel
+        await this.loadBrokerData(this.brokerData.name);
+        // Handle the response as needed
+        console.log(response.data);
+      } catch (error) {
+        console.error("Error selling stock:", error);
+      }
+    },
+
+
+
+  calculateProfitLoss(stock) {
       const currentPrice = this.stockData.find(s => s.symbol === stock.symbol)?.historicalDataElement[2] || 0;
       return (currentPrice - stock.purchasePrice) * stock.quantity;
     },
