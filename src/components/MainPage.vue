@@ -4,6 +4,12 @@
     <h1>Торговля</h1>
     <p v-if="brokerData">Добро пожаловать, {{ brokerData.name }}!</p>
     <p v-else>Loading...</p>
+
+    <div class="quantity-input">
+      <label for="quantity">Quantity:</label>
+      <input type="number" id="quantity" v-model="quantityInput" />
+    </div>
+
     <table v-if="stockData">
       <thead>
       <tr>
@@ -83,6 +89,7 @@ export default {
   data() {
     return {
       socket: null,
+      quantityInput: 1,
     };
   },
   created() {
@@ -98,7 +105,7 @@ export default {
     async buyStock(name, symbol, quantity, price) {
       try {
         // Send a request to the server to buy the stock
-        const response = await this.$axios.post(`http://localhost:3001/brokers/${name}/buy-stock/${symbol}/${quantity}/${price}`);
+        const response = await this.$axios.post(`http://localhost:3001/brokers/${name}/buy-stock/${symbol}/${this.quantityInput}/${price}`);
         await this.loadBrokerData(this.brokerData.name);
 
       } catch (error) {
@@ -109,7 +116,7 @@ export default {
     async sellStock(name, symbol, quantity, price) {
       try {
         // Send a request to the server to sell the stock
-        const response = await this.$axios.post(`http://localhost:3001/brokers/${name}/sell-stock/${symbol}/${quantity}/${price}`);
+        const response = await this.$axios.post(`http://localhost:3001/brokers/${name}/sell-stock/${symbol}/${this.quantityInput}/${price}`);
 
         // Update brokerData in the Vuex store after successful sel
         await this.loadBrokerData(this.brokerData.name);
