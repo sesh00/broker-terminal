@@ -2,16 +2,15 @@
   <div class="stock-chart-dialog">
     <button class="close-button" @click="closeDialog">&times;</button>
     <h2>{{ stockSymbol }} Price Chart</h2>
-    <div class="chart-container">
-      <canvas ref="chartCanvas"></canvas>
-    </div>
+    <div :id="chartId"></div>
   </div>
 </template>
 
-
 <script>
-import Chart from "chart.js/auto";
-import io from 'socket.io-client';
+import Highcharts from 'highcharts';
+import stockModule from 'highcharts/modules/stock';
+
+stockModule(Highcharts);
 
 export default {
   props: {
@@ -19,114 +18,70 @@ export default {
   },
   data() {
     return {
-      socket: null,
       historicalData: [],
+      chartId: 'stock-chart', // Add an ID for the chart container
       chart: null,
     };
   },
-  created() {
-    this.fetchHistoricalData();
-    // Commented out to prevent WebSocket initialization
-    // this.initializeWebSocket();
-  },
-  beforeDestroy() {
-    // Commented out to prevent WebSocket disconnection
-    // this.socket.disconnect();
-  },
-
   watch: {
     stockSymbol: function(newSymbol, oldSymbol) {
       if (oldSymbol !== null) {
-        this.destroyChart();
+        this.fetchHistoricalData(); // Fetch and update the chart when the symbol changes
       }
-      this.fetchHistoricalData();
     },
   },
-
   methods: {
-
     closeDialog() {
-      // Ensure the chart is destroyed before emitting the close event
-      this.destroyChart();
       this.$emit("closeDialog");
-    },
-
-    destroyChart() {
-      if (this.chart) {
-        this.chart.destroy();
-        this.chart = null;
-      }
     },
     async fetchHistoricalData() {
       try {
         const response = await this.$axios.get(`http://localhost:3001/stocks/${this.stockSymbol}/historical-data`);
-        // Check if data is available before mapping
         if (response.data?.dataset?.data) {
           this.historicalData = response.data.dataset.data.map(candle => ({
-            x: new Date(candle[0]),
-            y: Number(candle[4]), // Adjust to use the closing price or any other relevant data
+            x: new Date(candle[0]).getTime(),
+            open: Number(candle[1]),
+            high: Number(candle[2]),
+            low: Number(candle[3]),
+            close: Number(candle[4]),
           }));
-          this.createChart();
+
+          // Sort the data by date in ascending order
+          this.historicalData.sort((a, b) => a.x - b.x);
+
+          this.updateChart();
         }
       } catch (error) {
         console.error("Error fetching historical data:", error);
       }
     },
-    initializeWebSocket() {
-      this.socket = io('http://localhost:3001');
-      this.socket.on('updateStockData', async (newStockData) => {
-        //await this.updateHistoricalData(newStockData);
-      });
-    },
-    async updateHistoricalData(newStockData) {
-      // Process and update historical data with new stock data
-      // Example: Assuming newStockData is an array of updated stock data
-      this.historicalData.push(...newStockData);
-
-      // Update the chart
-      //this.updateChart();
+    updateChart() {
+      if (this.chart) {
+        // Update the series data
+        this.chart.series[0].setData(this.historicalData);
+      } else {
+        // Create the chart if it doesn't exist
+        this.createChart();
+      }
     },
     createChart() {
-      this.destroyChart();
-      const ctx = this.$refs.chartCanvas.getContext("2d");
-      this.chart = new Chart(ctx, {
-        type: "line", // Change to line chart
-        data: {
-          datasets: [{
-            data: this.historicalData,
-            label: 'Stock Price',
-            borderColor: 'rgba(75, 192, 192, 1)',
-            borderWidth: 2,
-            fill: false,
-          }]
+      this.chart = new Highcharts.stockChart(this.chartId, {
+        rangeSelector: {
+          selected: 1,
         },
-        options: {
-          scales: {
-            x: {
-              type: 'linear', // Change to linear scale for time values
-            },
-            y: {
-              beginAtZero: false,
-            },
-          },
-          plugins: {
-            legend: {
-              display: true,
-            },
-            tooltip: {
-              enabled: true,
-            },
-            title: {
-              display: true,
-              text: 'Stock Price Chart',
-            },
-          },
+        title: {
+          text: 'Stock Price Chart',
         },
+        series: [{
+          type: 'candlestick',
+          name: 'Stock Price',
+          data: this.historicalData,
+        }],
       });
     },
-    updateChart() {
-      // Implement update logic if needed
-    },
+  },
+  mounted() {
+    this.fetchHistoricalData(); // Fetch data and create the chart on component mount
   },
 };
 </script>
@@ -139,13 +94,12 @@ export default {
   background-color: #fff;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   position: relative;
-  transition: transform 0.3s ease-in-out; /* Added a transition for opening */
+  transition: transform 0.3s ease-in-out;
 }
 
 .stock-chart-dialog.open {
-  transform: translateX(0); /* Adjusted for opening animation */
+  transform: translateX(0);
 }
-
 
 .close-button {
   position: absolute;
@@ -159,10 +113,10 @@ export default {
 }
 
 .close-button:hover {
-  color: red; /* Change color on hover if desired */
+  color: red;
 }
 
-.chart-container {
-  margin-top: 20px;
+#stock-chart {
+  height: 400px;
 }
 </style>
