@@ -1,10 +1,13 @@
 <template>
   <div class="stock-chart-dialog">
-    <h2>{{ stockSymbol }} Price Chart</h2>
     <button class="close-button" @click="closeDialog">&times;</button>
-    <canvas ref="chartCanvas"></canvas>
+    <h2>{{ stockSymbol }} Price Chart</h2>
+    <div class="chart-container">
+      <canvas ref="chartCanvas"></canvas>
+    </div>
   </div>
 </template>
+
 
 <script>
 import Chart from "chart.js/auto";
@@ -60,7 +63,7 @@ export default {
         // Check if data is available before mapping
         if (response.data?.dataset?.data) {
           this.historicalData = response.data.dataset.data.map(candle => ({
-            x: new Date(candle[0]).getTime(),
+            x: new Date(candle[0]),
             y: Number(candle[4]), // Adjust to use the closing price or any other relevant data
           }));
           this.createChart();
@@ -130,13 +133,19 @@ export default {
 
 <style scoped>
 .stock-chart-dialog {
-  max-width: 600px;
+  max-width: 800px;
   margin: 20px auto;
   padding: 20px;
   background-color: #fff;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   position: relative;
+  transition: transform 0.3s ease-in-out; /* Added a transition for opening */
 }
+
+.stock-chart-dialog.open {
+  transform: translateX(0); /* Adjusted for opening animation */
+}
+
 
 .close-button {
   position: absolute;
@@ -151,5 +160,9 @@ export default {
 
 .close-button:hover {
   color: red; /* Change color on hover if desired */
+}
+
+.chart-container {
+  margin-top: 20px;
 }
 </style>
