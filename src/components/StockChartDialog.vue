@@ -2,7 +2,7 @@
   <div class="stock-chart-dialog">
     <button class="close-button" @click="closeDialog">&times;</button>
     <h2>{{ stockSymbol }} Price Chart</h2>
-    <div :id="chartId"></div>
+    <div :id="chartId" class="chart-container"></div>
   </div>
 </template>
 
@@ -66,6 +66,9 @@ export default {
     },
     createChart() {
       this.chart = new Highcharts.stockChart(this.chartId, {
+        chart: {
+          width: 1000, // Set the width of the chart
+        },
         rangeSelector: {
           selected: 1,
         },
@@ -88,7 +91,7 @@ export default {
 
 <style scoped>
 .stock-chart-dialog {
-  max-width: 800px;
+  max-width: 1200px; /* Increase the max-width of the dialog */
   margin: 20px auto;
   padding: 20px;
   background-color: #fff;
@@ -116,7 +119,8 @@ export default {
   color: red;
 }
 
-#stock-chart {
-  height: 400px;
+.chart-container {
+  width: 100%; /* Set the width of the chart container to 100% */
+  height: 500px; /* Adjust the height as needed */
 }
 </style>

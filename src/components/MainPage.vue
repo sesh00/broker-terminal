@@ -6,8 +6,8 @@
     <p v-else>Loading...</p>
 
     <div class="quantity-input">
-      <label for="quantity">Quantity:</label>
-      <input type="number" id="quantity" v-model="quantityInput" min="1" step="1" />
+      <label for="quantity" class="quantity-label">Quantity:</label>
+      <input type="number" id="quantity" v-model="quantityInput" min="1" step="1" class="quantity-field" />
     </div>
 
     <table v-if="stockData">
@@ -31,9 +31,9 @@
         <td>{{ stock.historicalDataElement[4] }}</td>
         <td>{{ stock.historicalDataElement[0] }}</td>
         <td>
-          <button @click="buyStock(brokerData.name, stock.symbol, 1, stock.historicalDataElement[3])">Buy</button>
-          <button @click="sellStock(brokerData.name, stock.symbol, 1, stock.historicalDataElement[3])">Sell</button>
-          <button @click="openChartDialog(stock.symbol)">Open Chart</button>
+          <button class="action-button buy-button" @click="buyStock(brokerData.name, stock.symbol, 1, stock.historicalDataElement[3])">Buy</button>
+          <button class="action-button sell-button" @click="sellStock(brokerData.name, stock.symbol, 1, stock.historicalDataElement[3])">Sell</button>
+          <button class="action-button chart-button" @click="openChartDialog(stock.symbol)">Open Chart</button>
         </td>
       </tr>
       </tbody>
@@ -221,6 +221,53 @@ th {
 .stock-info {
   display: flex;
   flex-direction: column;
+}
+
+.action-button {
+  padding: 10px;
+  margin: 5px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+}
+
+.buy-button {
+  background-color: #2ecc71; /* Green color for Buy button */
+  color: #ffffff; /* White text color */
+}
+
+.sell-button {
+  background-color: #e74c3c; /* Red color for Sell button */
+  color: #ffffff; /* White text color */
+}
+
+.chart-button {
+  background-color: #3498db; /* Blue color for Chart button */
+  color: #ffffff; /* White text color */
+}
+
+.action-button:hover {
+  background-color: #34495e; /* Darker shade on hover */
+}
+.quantity-input {
+  margin-top: 10px;
+}
+
+.quantity-label {
+  font-size: 16px;
+  font-weight: bold;
+  margin-right: 5px;
+}
+
+.quantity-field {
+  padding: 8px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  width: 70px;
 }
 
 .quantity {
