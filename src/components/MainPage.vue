@@ -174,7 +174,7 @@ export default {
     },
 
     openChartDialog(stockSymbol) {
-      // Close the existing chart dialog if one is open
+      console.log("Opening chart dialog for stock symbol:", stockSymbol);
       if (this.selectedStockSymbol !== null) {
         this.closeChartDialog();
       }

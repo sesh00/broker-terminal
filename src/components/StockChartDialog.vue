@@ -9,6 +9,7 @@
 <script>
 import Highcharts from 'highcharts';
 import stockModule from 'highcharts/modules/stock';
+import io from "socket.io-client";
 
 stockModule(Highcharts);
 
@@ -19,26 +20,46 @@ export default {
   data() {
     return {
       historicalData: [],
-      chartId: 'stock-chart', // Add an ID for the chart container
+      fullHistoricalData: [],
+      chartId: 'stock-chart',
       chart: null,
+      currentDate: null,
     };
   },
   watch: {
     stockSymbol: function(newSymbol, oldSymbol) {
-      if (oldSymbol !== null) {
-        this.fetchHistoricalData(); // Fetch and update the chart when the symbol changes
-      }
+        this.fetchHistoricalData();
     },
   },
   methods: {
+    initializeWebSocket() {
+      this.socket = io('http://localhost:3001');
+      this.socket.on('updateCurrentDate', (newDate) => {
+
+        this.currentDate = new Date(newDate).getTime();
+
+        this.filterHistoricalData();
+        this.updateChart();
+      });
+      this.socket.on('disconnect', () => {
+        console.log('WebSocket disconnected');
+      });
+    },
+    filterHistoricalData() {
+      this.historicalData = this.fullHistoricalData.filter(candle => candle.x <= this.currentDate);
+    },
+
+
     closeDialog() {
       this.$emit("closeDialog");
     },
     async fetchHistoricalData() {
       try {
+        // Fetch historical data
         const response = await this.$axios.get(`http://localhost:3001/stocks/${this.stockSymbol}/historical-data`);
+
         if (response.data?.dataset?.data) {
-          this.historicalData = response.data.dataset.data.map(candle => ({
+          this.fullHistoricalData = response.data.dataset.data.map(candle => ({
             x: new Date(candle[0]).getTime(),
             open: Number(candle[1]),
             high: Number(candle[2]),
@@ -46,10 +67,7 @@ export default {
             close: Number(candle[4]),
           }));
 
-          // Sort the data by date in ascending order
-          this.historicalData.sort((a, b) => a.x - b.x);
-
-          this.updateChart();
+          this.fullHistoricalData.sort((a, b) => a.x - b.x);
         }
       } catch (error) {
         console.error("Error fetching historical data:", error);
@@ -57,17 +75,15 @@ export default {
     },
     updateChart() {
       if (this.chart) {
-        // Update the series data
         this.chart.series[0].setData(this.historicalData);
       } else {
-        // Create the chart if it doesn't exist
         this.createChart();
       }
     },
     createChart() {
       this.chart = new Highcharts.stockChart(this.chartId, {
         chart: {
-          width: 1000, // Set the width of the chart
+          width: 1000,
         },
         rangeSelector: {
           selected: 1,
@@ -84,14 +100,23 @@ export default {
     },
   },
   mounted() {
-    this.fetchHistoricalData(); // Fetch data and create the chart on component mount
+    console.log("StockChartDialog mounted with stock symbol:", this.stockSymbol);
+
+    this.fetchHistoricalData();
+    this.initializeWebSocket();
+
+  },
+  beforeDestroy() {
+    if (this.socket) {
+      this.socket.disconnect();
+    }
   },
 };
 </script>
 
 <style scoped>
 .stock-chart-dialog {
-  max-width: 1200px; /* Increase the max-width of the dialog */
+  max-width: 1200px;
   margin: 20px auto;
   padding: 20px;
   background-color: #fff;
@@ -120,7 +145,7 @@ export default {
 }
 
 .chart-container {
-  width: 100%; /* Set the width of the chart container to 100% */
-  height: 500px; /* Adjust the height as needed */
+  width: 100%;
+  height: 500px;
 }
 </style>
